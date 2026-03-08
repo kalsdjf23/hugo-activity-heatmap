@@ -1,0 +1,375 @@
+{{- $page := index . "page" -}}
+{{- $section := default "" (index . "section") -}}
+{{- $days := int (default 365 (index . "days")) -}}
+{{- $title := default "" (index . "title") -}}
+{{- $mode := lower (default "density" (index . "mode")) -}}
+{{- $dateField := default "Date" (index . "date_field") -}}
+{{- $nounSingular := default "item" (index . "noun_singular") -}}
+{{- $nounPlural := default "items" (index . "noun_plural") -}}
+{{- $startLabel := default "Started on" (index . "start_label") -}}
+{{- $showStart := false -}}
+{{- if isset . "show_start" -}}
+  {{- $showStart = eq (lower (printf "%v" (index . "show_start"))) "true" -}}
+{{- end -}}
+{{- $binaryInactiveLabel := default "No activity" (index . "legend_inactive_label") -}}
+{{- $binaryActiveLabel := default "Active day" (index . "legend_active_label") -}}
+{{- if lt $days 1 -}}
+  {{- $days = 365 -}}
+{{- end -}}
+{{- if and (ne $mode "binary") (ne $mode "density") -}}
+  {{- $mode = "density" -}}
+{{- end -}}
+{{- if and (ne $dateField "Date") (ne $dateField "PublishDate") (ne $dateField "Lastmod") -}}
+  {{- $dateField = "Date" -}}
+{{- end -}}
+
+{{- $today := now -}}
+{{- $windowOffset := mul -1 (sub $days 1) -}}
+{{- $windowStart := $today.AddDate 0 0 $windowOffset -}}
+{{- $windowStartKey := $windowStart.Format "2006-01-02" -}}
+{{- $windowEndKey := $today.Format "2006-01-02" -}}
+{{- $startPad := mod (add $windowStart.Weekday 6) 7 -}}
+{{- $visibleCellCount := add $startPad $days -}}
+{{- $endPad := mod (sub 7 (mod $visibleCellCount 7)) 7 -}}
+{{- $cellCount := add $visibleCellCount $endPad -}}
+{{- $weekCount := div $cellCount 7 -}}
+
+{{- $countsByDay := dict -}}
+{{- $totalItems := 0 -}}
+{{- $firstItemKey := "" -}}
+{{- $firstItemLabel := "" -}}
+{{- range $page.Site.RegularPages -}}
+  {{- $pageDate := .Date -}}
+  {{- if and (eq $dateField "PublishDate") (not .PublishDate.IsZero) -}}
+    {{- $pageDate = .PublishDate -}}
+  {{- else if and (eq $dateField "Lastmod") (not .Lastmod.IsZero) -}}
+    {{- $pageDate = .Lastmod -}}
+  {{- end -}}
+  {{- $isNotExpired := or .ExpiryDate.IsZero (gt .ExpiryDate.Unix $today.Unix) -}}
+  {{- $matchesSection := or (eq $section "") (eq .Section $section) -}}
+  {{- if and $matchesSection (not .Draft) $isNotExpired (le $pageDate.Unix $today.Unix) -}}
+    {{- $dayKey := $pageDate.Format "2006-01-02" -}}
+    {{- if or (eq $firstItemKey "") (lt $dayKey $firstItemKey) -}}
+      {{- $firstItemKey = $dayKey -}}
+      {{- $firstItemLabel = $pageDate.Format "Jan 2, 2006" -}}
+    {{- end -}}
+    {{- if and (ge $dayKey $windowStartKey) (le $dayKey $windowEndKey) -}}
+      {{- $count := default 0 (index $countsByDay $dayKey) -}}
+      {{- $countsByDay = merge $countsByDay (dict $dayKey (add $count 1)) -}}
+      {{- $totalItems = add $totalItems 1 -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- $titleNoun := $nounPlural -}}
+{{- if eq $totalItems 1 -}}
+  {{- $titleNoun = $nounSingular -}}
+{{- end -}}
+{{- $heading := $title -}}
+{{- if not $heading -}}
+  {{- if eq $days 365 -}}
+    {{- $heading = printf "%d %s in the last year" $totalItems $titleNoun -}}
+  {{- else -}}
+    {{- $heading = printf "%d %s in the last %d days" $totalItems $titleNoun $days -}}
+  {{- end -}}
+{{- end -}}
+
+<div class="hea" style="--hea-weeks: {{ $weekCount }};">
+  <style>
+    .hea {
+      --hea-text: #24292f;
+      --hea-muted: #57606a;
+      --hea-border: #d0d7de;
+      --hea-surface: #ffffff;
+      --hea-level-empty: #ebedf0;
+      --hea-level-1: #9be9a8;
+      --hea-level-2: #40c463;
+      --hea-level-3: #30a14e;
+      --hea-level-4: #216e39;
+      --hea-gap: 4px;
+      width: 100%;
+      color: var(--hea-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .hea {
+        --hea-text: #e6edf3;
+        --hea-muted: #8b949e;
+        --hea-border: #30363d;
+        --hea-surface: #0d1117;
+        --hea-level-empty: #161b22;
+        --hea-level-1: #0e4429;
+        --hea-level-2: #006d32;
+        --hea-level-3: #26a641;
+        --hea-level-4: #39d353;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hea {
+        --hea-gap: 2px;
+      }
+    }
+
+    .hea * {
+      box-sizing: border-box;
+    }
+
+    .hea-card {
+      margin: 0;
+      padding: 1rem;
+      border: 1px solid var(--hea-border);
+      border-radius: 0.75rem;
+      background: var(--hea-surface);
+    }
+
+    .hea-title {
+      margin: 0 0 1rem;
+      color: var(--hea-text);
+      font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .hea-chart {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto auto;
+      row-gap: 0.625rem;
+      width: 100%;
+    }
+
+    .hea-months {
+      display: grid;
+      grid-template-columns: repeat(var(--hea-weeks), minmax(0, 1fr));
+      column-gap: var(--hea-gap);
+      min-height: 1rem;
+      width: 100%;
+      color: var(--hea-muted);
+      font-size: 0.875rem;
+      line-height: 1;
+    }
+
+    .hea-month {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: clip;
+    }
+
+    .hea-grid {
+      display: grid;
+      grid-template-columns: repeat(var(--hea-weeks), minmax(0, 1fr));
+      gap: var(--hea-gap);
+      width: 100%;
+    }
+
+    .hea-week {
+      display: grid;
+      grid-template-rows: repeat(7, minmax(0, 1fr));
+      gap: var(--hea-gap);
+    }
+
+    .hea-cell {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border: 1px solid rgba(27, 31, 36, 0.08);
+      border-radius: 3px;
+      background: var(--hea-level-empty);
+    }
+
+    .hea-cell--empty {
+      border-color: transparent;
+      background: transparent;
+    }
+
+    .hea-cell--inactive {
+      background: var(--hea-level-empty);
+    }
+
+    .hea-cell--level-1 {
+      background: var(--hea-level-1);
+    }
+
+    .hea-cell--level-2 {
+      background: var(--hea-level-2);
+    }
+
+    .hea-cell--level-3 {
+      background: var(--hea-level-3);
+    }
+
+    .hea-cell--level-4 {
+      background: var(--hea-level-4);
+    }
+
+    .hea-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem 1.25rem;
+      margin-top: 1rem;
+      color: var(--hea-muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+      line-height: 1.1;
+    }
+
+    .hea-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.625rem;
+    }
+
+    .hea-legend-ramp {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .hea-legend-item--start {
+      color: var(--hea-text);
+      font-weight: 600;
+    }
+
+    .hea-legend-swatch {
+      display: inline-block;
+      width: 1.125rem;
+      height: 1.125rem;
+      border: 1px solid var(--hea-border);
+      border-radius: 0.3rem;
+      flex: 0 0 auto;
+    }
+
+    .hea-legend-swatch--inactive {
+      background: var(--hea-level-empty);
+    }
+
+    .hea-legend-swatch--level-1 {
+      background: var(--hea-level-1);
+    }
+
+    .hea-legend-swatch--level-2 {
+      background: var(--hea-level-2);
+    }
+
+    .hea-legend-swatch--level-3 {
+      background: var(--hea-level-3);
+    }
+
+    .hea-legend-swatch--level-4 {
+      background: var(--hea-level-4);
+    }
+
+    .hea-start-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 1.5rem;
+      padding: 0.2rem 0.6rem;
+      border: 1px solid var(--hea-border);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--hea-surface) 84%, var(--hea-level-3) 16%);
+      color: var(--hea-text);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+  </style>
+
+  <section class="hea-card" aria-label="{{ $heading }}">
+    <h2 class="hea-title">{{ $heading }}</h2>
+    <div class="hea-chart">
+      <div class="hea-months" aria-hidden="true">
+        {{- range $weekIndex := seq 0 (sub $weekCount 1) -}}
+          {{- $label := "" -}}
+          {{- range $dayIndex := seq 0 6 -}}
+            {{- $offset := sub (add (mul $weekIndex 7) $dayIndex) $startPad -}}
+            {{- if and (ge $offset 0) (lt $offset $days) -}}
+              {{- $cellDate := $windowStart.AddDate 0 0 $offset -}}
+              {{- if and (eq $weekIndex 0) (eq $label "") -}}
+                {{- $label = $cellDate.Format "Jan" -}}
+              {{- else if eq $cellDate.Day 1 -}}
+                {{- $label = $cellDate.Format "Jan" -}}
+              {{- end -}}
+            {{- end -}}
+          {{- end -}}
+          <span class="hea-month">{{ $label }}</span>
+        {{- end -}}
+      </div>
+
+      <div class="hea-grid">
+        {{- range $weekIndex := seq 0 (sub $weekCount 1) -}}
+          <div class="hea-week">
+            {{- range $dayIndex := seq 0 6 -}}
+              {{- $offset := sub (add (mul $weekIndex 7) $dayIndex) $startPad -}}
+              {{- if and (ge $offset 0) (lt $offset $days) -}}
+                {{- $cellDate := $windowStart.AddDate 0 0 $offset -}}
+                {{- $dayKey := $cellDate.Format "2006-01-02" -}}
+                {{- $count := int (default 0 (index $countsByDay $dayKey)) -}}
+                {{- $stateClass := "hea-cell--inactive" -}}
+                {{- if gt $count 0 -}}
+                  {{- if eq $mode "binary" -}}
+                    {{- $stateClass = "hea-cell--level-3" -}}
+                  {{- else if eq $count 1 -}}
+                    {{- $stateClass = "hea-cell--level-1" -}}
+                  {{- else if eq $count 2 -}}
+                    {{- $stateClass = "hea-cell--level-2" -}}
+                  {{- else if le $count 4 -}}
+                    {{- $stateClass = "hea-cell--level-3" -}}
+                  {{- else -}}
+                    {{- $stateClass = "hea-cell--level-4" -}}
+                  {{- end -}}
+                {{- end -}}
+                {{- $dateLabel := $cellDate.Format "Jan 2, 2006" -}}
+                {{- $cellLabel := printf "No %s on %s" $nounPlural $dateLabel -}}
+                {{- if eq $count 1 -}}
+                  {{- $cellLabel = printf "1 %s on %s" $nounSingular $dateLabel -}}
+                {{- else if gt $count 1 -}}
+                  {{- $cellLabel = printf "%d %s on %s" $count $nounPlural $dateLabel -}}
+                {{- end -}}
+                <span class="hea-cell {{ $stateClass }}" role="img" aria-label="{{ $cellLabel }}" title="{{ $cellLabel }}"></span>
+              {{- else -}}
+                <span class="hea-cell hea-cell--empty" aria-hidden="true"></span>
+              {{- end -}}
+            {{- end -}}
+          </div>
+        {{- end -}}
+      </div>
+    </div>
+
+    <div class="hea-legend" aria-hidden="true">
+      {{- if eq $mode "binary" -}}
+        <span class="hea-legend-item">
+          <span class="hea-legend-swatch hea-legend-swatch--inactive"></span>
+          <span>{{ $binaryInactiveLabel }}</span>
+        </span>
+        <span class="hea-legend-item">
+          <span class="hea-legend-swatch hea-legend-swatch--level-3"></span>
+          <span>{{ $binaryActiveLabel }}</span>
+        </span>
+      {{- else -}}
+        <span class="hea-legend-item">
+          <span>Less</span>
+          <span class="hea-legend-ramp">
+            <span class="hea-legend-swatch hea-legend-swatch--inactive"></span>
+            <span class="hea-legend-swatch hea-legend-swatch--level-1"></span>
+            <span class="hea-legend-swatch hea-legend-swatch--level-2"></span>
+            <span class="hea-legend-swatch hea-legend-swatch--level-3"></span>
+            <span class="hea-legend-swatch hea-legend-swatch--level-4"></span>
+          </span>
+          <span>More</span>
+        </span>
+      {{- end -}}
+      {{- if and $showStart $firstItemLabel -}}
+        <span class="hea-legend-item hea-legend-item--start">
+          <span class="hea-start-chip">Start</span>
+          <span>{{ $startLabel }} {{ $firstItemLabel }}</span>
+        </span>
+      {{- end -}}
+    </div>
+  </section>
+</div>

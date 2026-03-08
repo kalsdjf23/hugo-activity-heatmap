@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ .Title }}</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 2rem 1rem 4rem;
+        background: #f3f4f6;
+        color: #111827;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      main {
+        max-width: 72rem;
+        margin: 0 auto;
+      }
+
+      h1,
+      h2 {
+        margin-top: 0;
+      }
+
+      ul {
+        padding-left: 1.2rem;
+      }
+
+      a {
+        color: #0f766e;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>{{ .Title }}</h1>
+      {{ .Content }}
+
+      {{ partial "hugo-activity-heatmap/activity.html" (dict
+        "page" .
+        "section" "blog"
+        "noun_singular" "post"
+        "noun_plural" "posts"
+        "show_start" true
+        "start_label" "Started on"
+      ) }}
+
+      <h2>Demo pages</h2>
+      <ul>
+        <li><a href="/shortcode-demo/">Shortcode demo</a></li>
+        <li><a href="/binary-demo/">Binary mode demo</a></li>
+        <li><a href="/publishdate-demo/">PublishDate demo</a></li>
+        <li><a href="/lastmod-demo/">Lastmod demo</a></li>
+        <li><a href="/no-activity/">Empty-state demo</a></li>
+      </ul>
+    </main>
+  </body>
+</html>

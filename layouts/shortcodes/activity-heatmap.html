@@ -1,0 +1,25 @@
+{{- $section := .Get "section" | default "" -}}
+{{- $days := .Get "days" | default 365 | int -}}
+{{- $title := .Get "title" | default "" -}}
+{{- $mode := .Get "mode" | default "density" -}}
+{{- $dateField := .Get "date_field" | default "Date" -}}
+{{- $nounSingular := .Get "noun_singular" | default "item" -}}
+{{- $nounPlural := .Get "noun_plural" | default "items" -}}
+{{- $showStart := .Get "show_start" | default "false" -}}
+{{- $startLabel := .Get "start_label" | default "Started on" -}}
+{{- $legendInactiveLabel := .Get "legend_inactive_label" | default "No activity" -}}
+{{- $legendActiveLabel := .Get "legend_active_label" | default "Active day" -}}
+{{- partial "hugo-activity-heatmap/activity.html" (dict
+  "page" .Page
+  "section" $section
+  "days" $days
+  "title" $title
+  "mode" $mode
+  "date_field" $dateField
+  "noun_singular" $nounSingular
+  "noun_plural" $nounPlural
+  "show_start" $showStart
+  "start_label" $startLabel
+  "legend_inactive_label" $legendInactiveLabel
+  "legend_active_label" $legendActiveLabel
+) -}}
