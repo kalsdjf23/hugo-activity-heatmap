@@ -10,6 +10,9 @@
 {{- $showStartText := .Get "show_start_text" | default "true" -}}
 {{- $showWeekdays := .Get "show_weekdays" | default "false" -}}
 {{- $startLabel := .Get "start_label" | default "Started on" -}}
+{{- $weekdayMonLabel := .Get "weekday_mon_label" | default "Mo" -}}
+{{- $weekdayWedLabel := .Get "weekday_wed_label" | default "We" -}}
+{{- $weekdayFriLabel := .Get "weekday_fri_label" | default "Fr" -}}
 {{- $legendInactiveLabel := .Get "legend_inactive_label" | default "No activity" -}}
 {{- $legendActiveLabel := .Get "legend_active_label" | default "Active day" -}}
 {{- partial "hugo-activity-heatmap/activity.html" (dict
@@ -26,6 +29,9 @@
   "show_start_text" $showStartText
   "show_weekdays" $showWeekdays
   "start_label" $startLabel
+  "weekday_mon_label" $weekdayMonLabel
+  "weekday_wed_label" $weekdayWedLabel
+  "weekday_fri_label" $weekdayFriLabel
   "legend_inactive_label" $legendInactiveLabel
   "legend_active_label" $legendActiveLabel
 ) -}}

@@ -1,6 +1,6 @@
 +++
 title = "Extra blog post 19"
-date = 2025-08-08T08:00:00+01:00
+date = 2025-08-09T08:00:00+01:00
 draft = false
 +++
 

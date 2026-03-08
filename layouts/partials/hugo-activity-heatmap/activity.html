@@ -7,6 +7,9 @@
 {{- $nounSingular := default "item" (index . "noun_singular") -}}
 {{- $nounPlural := default "items" (index . "noun_plural") -}}
 {{- $startLabel := default "Started on" (index . "start_label") -}}
+{{- $weekdayMonLabel := default "Mo" (index . "weekday_mon_label") -}}
+{{- $weekdayWedLabel := default "We" (index . "weekday_wed_label") -}}
+{{- $weekdayFriLabel := default "Fr" (index . "weekday_fri_label") -}}
 {{- $showStart := false -}}
 {{- $showStartChip := true -}}
 {{- $showStartText := true -}}
@@ -180,7 +183,14 @@
       grid-template-columns: minmax(0, 1fr);
       column-gap: 0.75rem;
       width: 100%;
-      align-items: start;
+    }
+
+    .hea-months-row {
+      align-items: end;
+    }
+
+    .hea-grid-row {
+      align-items: stretch;
     }
 
     .hea-months-row--with-weekdays,
@@ -215,8 +225,9 @@
 
     .hea-weekdays {
       display: grid;
-      grid-template-rows: repeat(7, minmax(0, 1fr));
+      grid-template-rows: repeat(7, 1fr);
       gap: var(--hea-gap);
+      height: 100%;
       width: var(--hea-axis-width);
       color: var(--hea-muted);
       font-size: 0.72rem;
@@ -225,10 +236,12 @@
     }
 
     .hea-weekday {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: flex-end;
+      height: 100%;
       min-width: 0;
+      padding-right: 0.25rem;
     }
 
     .hea-grid {
@@ -379,9 +392,9 @@
       <div class="hea-grid-row {{ if $showWeekdays }}hea-grid-row--with-weekdays{{ end }}">
         {{- if $showWeekdays -}}
           <div class="hea-weekdays" aria-hidden="true">
-            <span class="hea-weekday" style="grid-row: 1;">Mo</span>
-            <span class="hea-weekday" style="grid-row: 3;">We</span>
-            <span class="hea-weekday" style="grid-row: 5;">Fr</span>
+            <span class="hea-weekday" style="grid-row: 1;">{{ $weekdayMonLabel }}</span>
+            <span class="hea-weekday" style="grid-row: 3;">{{ $weekdayWedLabel }}</span>
+            <span class="hea-weekday" style="grid-row: 5;">{{ $weekdayFriLabel }}</span>
           </div>
         {{- end -}}
         <div class="hea-grid">

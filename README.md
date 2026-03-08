@@ -84,6 +84,9 @@ Common example:
 - `show_start_chip`: optional, default `true`
 - `show_start_text`: optional, default `true`
 - `show_weekdays`: optional, default `false`; shows `Mo`, `We`, and `Fr`
+- `weekday_mon_label`: optional, default `Mo`
+- `weekday_wed_label`: optional, default `We`
+- `weekday_fri_label`: optional, default `Fr`
 - `start_label`: optional, default `Started on`
 - `legend_inactive_label`: optional, binary mode only, default `No activity`
 - `legend_active_label`: optional, binary mode only, default `Active day`
@@ -106,6 +109,20 @@ Blog posts with density mode:
 
 ```md
 {{< activity-heatmap section="blog" noun_singular="post" noun_plural="posts" show_weekdays="true" >}}
+```
+
+Localized weekday labels:
+
+```md
+{{< activity-heatmap
+  section="blog"
+  noun_singular="post"
+  noun_plural="posts"
+  show_weekdays="true"
+  weekday_mon_label="Mo"
+  weekday_wed_label="Wo"
+  weekday_fri_label="Fr"
+>}}
 ```
 
 Notes with binary mode:
