@@ -9,6 +9,8 @@ It is generic by default:
 - supports both binary and density heatmaps
 - has no JavaScript and no dependency on the host site's CSS
 
+![hugo-activity-heatmap screenshot](https://raw.githubusercontent.com/kalsdjf23/hugo-activity-heatmap/main/images/screenshot.png)
+
 ## Hugo Directory Metadata
 
 This repository includes the metadata expected by the Hugo themes directory:
