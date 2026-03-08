@@ -8,8 +8,20 @@
 {{- $nounPlural := default "items" (index . "noun_plural") -}}
 {{- $startLabel := default "Started on" (index . "start_label") -}}
 {{- $showStart := false -}}
+{{- $showStartChip := true -}}
+{{- $showStartText := true -}}
+{{- $showWeekdays := false -}}
 {{- if isset . "show_start" -}}
   {{- $showStart = eq (lower (printf "%v" (index . "show_start"))) "true" -}}
+{{- end -}}
+{{- if isset . "show_start_chip" -}}
+  {{- $showStartChip = eq (lower (printf "%v" (index . "show_start_chip"))) "true" -}}
+{{- end -}}
+{{- if isset . "show_start_text" -}}
+  {{- $showStartText = eq (lower (printf "%v" (index . "show_start_text"))) "true" -}}
+{{- end -}}
+{{- if isset . "show_weekdays" -}}
+  {{- $showWeekdays = eq (lower (printf "%v" (index . "show_weekdays"))) "true" -}}
 {{- end -}}
 {{- $binaryInactiveLabel := default "No activity" (index . "legend_inactive_label") -}}
 {{- $binaryActiveLabel := default "Active day" (index . "legend_active_label") -}}
@@ -74,6 +86,26 @@
   {{- end -}}
 {{- end -}}
 
+{{- $monthStarts := slice -}}
+{{- range $weekIndex := seq 0 (sub $weekCount 1) -}}
+  {{- $appendedMonth := false -}}
+  {{- $firstVisibleInWeek := true -}}
+  {{- range $dayIndex := seq 0 6 -}}
+    {{- $offset := sub (add (mul $weekIndex 7) $dayIndex) $startPad -}}
+    {{- if and (ge $offset 0) (lt $offset $days) -}}
+      {{- $cellDate := $windowStart.AddDate 0 0 $offset -}}
+      {{- if and (eq $weekIndex 0) $firstVisibleInWeek -}}
+        {{- $monthStarts = $monthStarts | append (dict "label" ($cellDate.Format "Jan") "week" $weekIndex) -}}
+        {{- $appendedMonth = true -}}
+      {{- else if and (not $appendedMonth) (eq $cellDate.Day 1) -}}
+        {{- $monthStarts = $monthStarts | append (dict "label" ($cellDate.Format "Jan") "week" $weekIndex) -}}
+        {{- $appendedMonth = true -}}
+      {{- end -}}
+      {{- $firstVisibleInWeek = false -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
 <div class="hea" style="--hea-weeks: {{ $weekCount }};">
   <style>
     .hea {
@@ -87,6 +119,7 @@
       --hea-level-3: #30a14e;
       --hea-level-4: #216e39;
       --hea-gap: 4px;
+      --hea-axis-width: 2.25rem;
       width: 100%;
       color: var(--hea-text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -109,6 +142,7 @@
     @media (max-width: 640px) {
       .hea {
         --hea-gap: 2px;
+        --hea-axis-width: 1.6rem;
       }
     }
 
@@ -140,6 +174,26 @@
       width: 100%;
     }
 
+    .hea-months-row,
+    .hea-grid-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      column-gap: 0.75rem;
+      width: 100%;
+      align-items: start;
+    }
+
+    .hea-months-row--with-weekdays,
+    .hea-grid-row--with-weekdays {
+      grid-template-columns: var(--hea-axis-width) minmax(0, 1fr);
+    }
+
+    .hea-axis-spacer {
+      display: block;
+      width: var(--hea-axis-width);
+      min-height: 1px;
+    }
+
     .hea-months {
       display: grid;
       grid-template-columns: repeat(var(--hea-weeks), minmax(0, 1fr));
@@ -153,9 +207,28 @@
 
     .hea-month {
       min-width: 0;
-      overflow: hidden;
       white-space: nowrap;
-      text-overflow: clip;
+      overflow: visible;
+      font-size: 0.8rem;
+      align-self: end;
+    }
+
+    .hea-weekdays {
+      display: grid;
+      grid-template-rows: repeat(7, minmax(0, 1fr));
+      gap: var(--hea-gap);
+      width: var(--hea-axis-width);
+      color: var(--hea-muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .hea-weekday {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      min-width: 0;
     }
 
     .hea-grid {
@@ -283,61 +356,72 @@
   <section class="hea-card" aria-label="{{ $heading }}">
     <h2 class="hea-title">{{ $heading }}</h2>
     <div class="hea-chart">
-      <div class="hea-months" aria-hidden="true">
-        {{- range $weekIndex := seq 0 (sub $weekCount 1) -}}
-          {{- $label := "" -}}
-          {{- range $dayIndex := seq 0 6 -}}
-            {{- $offset := sub (add (mul $weekIndex 7) $dayIndex) $startPad -}}
-            {{- if and (ge $offset 0) (lt $offset $days) -}}
-              {{- $cellDate := $windowStart.AddDate 0 0 $offset -}}
-              {{- if and (eq $weekIndex 0) (eq $label "") -}}
-                {{- $label = $cellDate.Format "Jan" -}}
-              {{- else if eq $cellDate.Day 1 -}}
-                {{- $label = $cellDate.Format "Jan" -}}
-              {{- end -}}
-            {{- end -}}
-          {{- end -}}
-          <span class="hea-month">{{ $label }}</span>
+      <div class="hea-months-row {{ if $showWeekdays }}hea-months-row--with-weekdays{{ end }}">
+        {{- if $showWeekdays -}}
+          <span class="hea-axis-spacer" aria-hidden="true"></span>
         {{- end -}}
+        <div class="hea-months" aria-hidden="true">
+          {{- range $monthIndex, $month := $monthStarts -}}
+            {{- $startWeek := int (index $month "week") -}}
+            {{- $spanEnd := $weekCount -}}
+            {{- if lt $monthIndex (sub (len $monthStarts) 1) -}}
+              {{- $spanEnd = int (index (index $monthStarts (add $monthIndex 1)) "week") -}}
+            {{- end -}}
+            {{- $span := sub $spanEnd $startWeek -}}
+            {{- if lt $span 1 -}}
+              {{- $span = 1 -}}
+            {{- end -}}
+            <span class="hea-month" style="grid-column: {{ add $startWeek 1 }} / span {{ $span }};">{{ index $month "label" }}</span>
+          {{- end -}}
+        </div>
       </div>
 
-      <div class="hea-grid">
-        {{- range $weekIndex := seq 0 (sub $weekCount 1) -}}
-          <div class="hea-week">
-            {{- range $dayIndex := seq 0 6 -}}
-              {{- $offset := sub (add (mul $weekIndex 7) $dayIndex) $startPad -}}
-              {{- if and (ge $offset 0) (lt $offset $days) -}}
-                {{- $cellDate := $windowStart.AddDate 0 0 $offset -}}
-                {{- $dayKey := $cellDate.Format "2006-01-02" -}}
-                {{- $count := int (default 0 (index $countsByDay $dayKey)) -}}
-                {{- $stateClass := "hea-cell--inactive" -}}
-                {{- if gt $count 0 -}}
-                  {{- if eq $mode "binary" -}}
-                    {{- $stateClass = "hea-cell--level-3" -}}
-                  {{- else if eq $count 1 -}}
-                    {{- $stateClass = "hea-cell--level-1" -}}
-                  {{- else if eq $count 2 -}}
-                    {{- $stateClass = "hea-cell--level-2" -}}
-                  {{- else if le $count 4 -}}
-                    {{- $stateClass = "hea-cell--level-3" -}}
-                  {{- else -}}
-                    {{- $stateClass = "hea-cell--level-4" -}}
-                  {{- end -}}
-                {{- end -}}
-                {{- $dateLabel := $cellDate.Format "Jan 2, 2006" -}}
-                {{- $cellLabel := printf "No %s on %s" $nounPlural $dateLabel -}}
-                {{- if eq $count 1 -}}
-                  {{- $cellLabel = printf "1 %s on %s" $nounSingular $dateLabel -}}
-                {{- else if gt $count 1 -}}
-                  {{- $cellLabel = printf "%d %s on %s" $count $nounPlural $dateLabel -}}
-                {{- end -}}
-                <span class="hea-cell {{ $stateClass }}" role="img" aria-label="{{ $cellLabel }}" title="{{ $cellLabel }}"></span>
-              {{- else -}}
-                <span class="hea-cell hea-cell--empty" aria-hidden="true"></span>
-              {{- end -}}
-            {{- end -}}
+      <div class="hea-grid-row {{ if $showWeekdays }}hea-grid-row--with-weekdays{{ end }}">
+        {{- if $showWeekdays -}}
+          <div class="hea-weekdays" aria-hidden="true">
+            <span class="hea-weekday" style="grid-row: 1;">Mo</span>
+            <span class="hea-weekday" style="grid-row: 3;">We</span>
+            <span class="hea-weekday" style="grid-row: 5;">Fr</span>
           </div>
         {{- end -}}
+        <div class="hea-grid">
+          {{- range $weekIndex := seq 0 (sub $weekCount 1) -}}
+            <div class="hea-week">
+              {{- range $dayIndex := seq 0 6 -}}
+                {{- $offset := sub (add (mul $weekIndex 7) $dayIndex) $startPad -}}
+                {{- if and (ge $offset 0) (lt $offset $days) -}}
+                  {{- $cellDate := $windowStart.AddDate 0 0 $offset -}}
+                  {{- $dayKey := $cellDate.Format "2006-01-02" -}}
+                  {{- $count := int (default 0 (index $countsByDay $dayKey)) -}}
+                  {{- $stateClass := "hea-cell--inactive" -}}
+                  {{- if gt $count 0 -}}
+                    {{- if eq $mode "binary" -}}
+                      {{- $stateClass = "hea-cell--level-3" -}}
+                    {{- else if eq $count 1 -}}
+                      {{- $stateClass = "hea-cell--level-1" -}}
+                    {{- else if eq $count 2 -}}
+                      {{- $stateClass = "hea-cell--level-2" -}}
+                    {{- else if le $count 4 -}}
+                      {{- $stateClass = "hea-cell--level-3" -}}
+                    {{- else -}}
+                      {{- $stateClass = "hea-cell--level-4" -}}
+                    {{- end -}}
+                  {{- end -}}
+                  {{- $dateLabel := $cellDate.Format "Jan 2, 2006" -}}
+                  {{- $cellLabel := printf "No %s on %s" $nounPlural $dateLabel -}}
+                  {{- if eq $count 1 -}}
+                    {{- $cellLabel = printf "1 %s on %s" $nounSingular $dateLabel -}}
+                  {{- else if gt $count 1 -}}
+                    {{- $cellLabel = printf "%d %s on %s" $count $nounPlural $dateLabel -}}
+                  {{- end -}}
+                  <span class="hea-cell {{ $stateClass }}" role="img" aria-label="{{ $cellLabel }}" title="{{ $cellLabel }}"></span>
+                {{- else -}}
+                  <span class="hea-cell hea-cell--empty" aria-hidden="true"></span>
+                {{- end -}}
+              {{- end -}}
+            </div>
+          {{- end -}}
+        </div>
       </div>
     </div>
 
@@ -364,10 +448,14 @@
           <span>More</span>
         </span>
       {{- end -}}
-      {{- if and $showStart $firstItemLabel -}}
+      {{- if and $showStart $firstItemLabel (or $showStartChip $showStartText) -}}
         <span class="hea-legend-item hea-legend-item--start">
-          <span class="hea-start-chip">Start</span>
-          <span>{{ $startLabel }} {{ $firstItemLabel }}</span>
+          {{- if $showStartChip -}}
+            <span class="hea-start-chip">Start</span>
+          {{- end -}}
+          {{- if $showStartText -}}
+            <span>{{ $startLabel }} {{ $firstItemLabel }}</span>
+          {{- end -}}
         </span>
       {{- end -}}
     </div>

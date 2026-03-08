@@ -79,6 +79,9 @@ Common example:
 - `noun_singular`: optional, default `item`
 - `noun_plural`: optional, default `items`
 - `show_start`: optional, default `false`
+- `show_start_chip`: optional, default `true`
+- `show_start_text`: optional, default `true`
+- `show_weekdays`: optional, default `false`; shows `Mo`, `We`, and `Fr`
 - `start_label`: optional, default `Started on`
 - `legend_inactive_label`: optional, binary mode only, default `No activity`
 - `legend_active_label`: optional, binary mode only, default `Active day`
@@ -88,8 +91,8 @@ Common example:
 - renders the last `365` days by default
 - uses a Monday-first padded grid
 - scales to the width of its host container without horizontal scrolling
-- shows month labels across the top
-- omits weekday labels so the full width can be used for cells
+- shows full month labels across the top
+- can optionally show `Mo`, `We`, and `Fr` labels to the left of the grid
 - filters out drafts, expired pages, and future-dated pages
 - groups pages by the selected date field at day resolution
 - auto-generates headings such as `4 posts in the last year`
@@ -100,7 +103,7 @@ Common example:
 Blog posts with density mode:
 
 ```md
-{{< activity-heatmap section="blog" noun_singular="post" noun_plural="posts" >}}
+{{< activity-heatmap section="blog" noun_singular="post" noun_plural="posts" show_weekdays="true" >}}
 ```
 
 Notes with binary mode:
@@ -112,6 +115,7 @@ Notes with binary mode:
   noun_singular="note"
   noun_plural="notes"
   show_start="true"
+  show_start_chip="false"
   legend_inactive_label="No notes"
   legend_active_label="Published"
 >}}

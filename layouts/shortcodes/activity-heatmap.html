@@ -6,6 +6,9 @@
 {{- $nounSingular := .Get "noun_singular" | default "item" -}}
 {{- $nounPlural := .Get "noun_plural" | default "items" -}}
 {{- $showStart := .Get "show_start" | default "false" -}}
+{{- $showStartChip := .Get "show_start_chip" | default "true" -}}
+{{- $showStartText := .Get "show_start_text" | default "true" -}}
+{{- $showWeekdays := .Get "show_weekdays" | default "false" -}}
 {{- $startLabel := .Get "start_label" | default "Started on" -}}
 {{- $legendInactiveLabel := .Get "legend_inactive_label" | default "No activity" -}}
 {{- $legendActiveLabel := .Get "legend_active_label" | default "Active day" -}}
@@ -19,6 +22,9 @@
   "noun_singular" $nounSingular
   "noun_plural" $nounPlural
   "show_start" $showStart
+  "show_start_chip" $showStartChip
+  "show_start_text" $showStartText
+  "show_weekdays" $showWeekdays
   "start_label" $startLabel
   "legend_inactive_label" $legendInactiveLabel
   "legend_active_label" $legendActiveLabel
