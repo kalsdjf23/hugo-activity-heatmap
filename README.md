@@ -9,6 +9,15 @@ It is generic by default:
 - supports both binary and density heatmaps
 - has no JavaScript and no dependency on the host site's CSS
 
+## Hugo Directory Metadata
+
+This repository includes the metadata expected by the Hugo themes directory:
+
+- `theme.toml`
+- root `hugo.toml` with `module.hugoVersion`
+- `LICENSE`
+- preview images in `images/`
+
 ## Install
 
 Hugo Modules require a working `go` binary on your `PATH`.

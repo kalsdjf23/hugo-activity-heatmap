@@ -1,0 +1,12 @@
+name = "hugo-activity-heatmap"
+license = "MIT"
+licenselink = "https://github.com/kalsdjf23/hugo-activity-heatmap/blob/main/LICENSE"
+description = "A generic Hugo Module that renders a GitHub-style activity heatmap from your Hugo pages."
+homepage = "https://github.com/kalsdjf23/hugo-activity-heatmap"
+tags = ["component", "activity", "heatmap", "responsive", "minimal"]
+features = ["hugo-module", "shortcode", "partial", "binary-mode", "density-mode", "no-javascript"]
+min_version = "0.155.0"
+
+[author]
+  name = "Hugo Melis"
+  homepage = "https://hugomelis.nl/"
