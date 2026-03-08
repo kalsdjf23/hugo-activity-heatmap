@@ -129,14 +129,6 @@ All regular pages:
 ) }}
 ```
 
-## Compatibility Wrapper
-
-If you want the older experiment-specific API, use the wrapper module:
-
-- [`github.com/kalsdjf23/hugo-experiment-activity`](https://github.com/kalsdjf23/hugo-experiment-activity)
-
-That wrapper keeps the old partial and shortcode names while delegating to this generic module.
-
 ## Local Smoke Test
 
 This repo includes `exampleSite/` wired to the local module via a `replace` directive.
