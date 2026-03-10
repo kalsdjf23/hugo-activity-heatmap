@@ -11,6 +11,12 @@ It is generic by default:
 
 ![hugo-activity-heatmap screenshot](https://raw.githubusercontent.com/kalsdjf23/hugo-activity-heatmap/main/images/screenshot.png)
 
+## Build Story
+
+This module started as a site-specific experiment and was later refactored into a reusable Hugo component.
+
+Read the full write-up: [Can I contribute a Hugo component to open source?](https://hugomelis.nl/experiments/experiment-20-open-source-contribution-github-style-activity-component/)
+
 ## Hugo Directory Metadata
 
 This repository includes the metadata expected by the Hugo themes directory:
